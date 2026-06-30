@@ -1,0 +1,26 @@
+{
+  "name": "notebackend",
+  "version": "0.0.1",
+  "description": "Fullstack Open exercises for part 3",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonijhonkanen/FullstackOpenPart3.git"
+  },
+  "author": "Joni Honkanen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jonijhonkanen/FullstackOpenPart3/issues"
+  },
+  "homepage": "https://github.com/jonijhonkanen/FullstackOpenPart3#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.1.0",
+    "morgan": "^1.10.0"
+  }
+}

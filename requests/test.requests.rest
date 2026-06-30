@@ -1,0 +1,59 @@
+###INFO
+GET http://localhost:3001/info
+###
+//Get all persons
+GET http://localhost:3001/api/persons
+
+###
+//Get a single person
+GET http://localhost:3001/api/persons/1
+
+###
+//Delete a person
+DELETE http://localhost:3001/api/persons/1
+
+###
+//Post new person (success)
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name": "Jaakko Takala",
+    "number": "050-8893312"
+}
+
+###
+//No name
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "number": "050-8893312"
+}
+
+###
+//No number
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+   "name": "Jaakko Takala"
+}
+
+###
+//Name exists
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name": "Arto Hellas",
+    "number": "050-8893312"
+}
+###
+POST http://localhost:3001/api/notes
+Content-Type: application/json
+
+{
+    "content": "do not forget to set correct content type",
+    "important": true
+}
