@@ -1,4 +1,7 @@
+require('dotenv').config();
 const express = require('express');
+//MONGOOSE MODEL
+const Person = require('./models/person');
 //Middleware Morgan
 const morgan = require('morgan');
 const cors = require('cors');
@@ -15,7 +18,6 @@ morgan.token('post_data', function (req, res) {
   //Cannot convert undefined or null to object
   //return in string format
   return req.body && req.body.length != 0 ? JSON.stringify(req.body) : '-';
-  //return Object.entries(req.body).length != 0 ? JSON.stringify(req.body) : '-';
 });
 
 //app.use(morgan('tiny'));
@@ -25,61 +27,102 @@ app.use(
     ':method :url :status :res[content-length] - :response-time ms :post_data',
   ),
 );
-//Random id generation
-const generateId = () => {
-  //0 <= x < 1
-  return Math.floor(Math.random() * 6000);
-};
 
-let persons = [
-  { id: 1, name: 'Arto Hellas', number: '040-6657935' },
-  { id: 2, name: 'Jani Tapiola', number: '050-7157732' },
-  { id: 3, name: 'Liisa Kario', number: '041-66989132' },
-];
+//MONGOOSE TEST
+/*
+const mongoose = require('mongoose');
+const url = process.env.MONGODB_URI;
 
+mongoose.set('strictQuery', false);
+mongoose
+  .connect(url, { family: 4 })
+  .then((result) => {
+    console.log('Connecting to ' + url);
+    console.log('Connected to MongoDB');
+  })
+  .catch((error) => {
+    console.log('error connecting to MongoDB:', error.message);
+  });
+
+const personSchema = new mongoose.Schema({
+  name: String,
+  number: String,
+});
+
+const Person = mongoose.model('Person', personSchema);
+
+personSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+});
+*/
 //LOCALHOST
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>');
 });
 
 //All persons
-app.get('/api/persons', (request, response) => {
-  response.json(persons);
+app.get('/api/persons', (request, response, next) => {
+  //MONGOOSE
+  Person.find({})
+    .then((persons) => {
+      response.json(persons);
+    })
+    .catch((error) => next(error));
 });
 
 //GET by ID
-app.get('/api/persons/:id', (request, response) => {
-  //console.log('get by id');
-  //const id = request.params.id;
-  const id = Number(request.params.id);
+app.get('/api/persons/:id', (request, response, next) => {
+  //const id = Number(request.params.id);
+  Person.findById(request.params.id)
+    .then((person) => {
+      if (person) {
+        response.json(person);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch((error) => {
+      next(error);
+      //console.log(error);
+      //response.status(400).send({ error: 'malformatted id' });
+    });
+  /*
   const person = persons.find((person) => person.id === id);
   if (person) {
     response.json(person);
   } else {
     response.status(404).end();
   }
+    */
 });
 
 //DELETE
-app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id);
-  persons = persons.filter((person) => person.id !== id);
-
-  response.status(204).end();
+app.delete('/api/persons/:id', (request, response, next) => {
+  console.log('Clicked Delete');
+  Person.findByIdAndDelete(request.params.id)
+    .then((result) => {
+      response.status(204).end();
+    })
+    .catch((error) => next(error));
 });
 
 //POST
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   //Content from body
   const body = request.body;
-  //Id generated
-  const id = generateId();
-  //console.log(id);
-  //console.log(body.name);
-  //console.log(body.number);
 
-  //Name or number missing
+  /*
+  if (!body.name || !body.number) {
+    //next(error);
+  }*/
+
   if (!body.name) {
+    //Name or number missing
+    console.log(error.name);
     return response.status(400).json({
       error: 'name missing',
     });
@@ -89,37 +132,94 @@ app.post('/api/persons', (request, response) => {
     });
   }
 
-  //Name not unique
-  if (persons.find((person) => person.name === body.name)) {
+  /*{
     return response.status(400).json({
-      error: 'name must be unique',
+      error: 'name missing',
     });
-  }
+    return response.status(400).json({
+      error: 'number missing',
+    });
+  }*/
 
-  //Form new person note
-  const person = {
-    id: id,
+  const person = new Person({
     name: body.name,
     number: body.number,
-  };
+  });
+  //Save new phone number
+  person
+    .save()
+    .then((savedNote) => {
+      response.json(savedNote);
+    })
+    .catch((error) => next(error));
+});
 
-  //Add person to array on server
-  persons = persons.concat(person);
+//PUT (Change existing person's phone number)
+app.put('/api/persons/:id', (request, response, next) => {
+  const { name, number } = request.body;
+  console.log('Changing number for: ' + name);
+  console.log('New number: ' + number);
+  Person.findById(request.params.id)
+    .then((person) => {
+      if (!person) {
+        return response.status(404).end();
+      }
 
-  //Response with added person
-  response.json(person);
+      person.name = name;
+      person.number = number;
+
+      return person.save().then((updatedPerson) => {
+        response.json(updatedPerson);
+      });
+    })
+    .catch((error) => next(error));
 });
 
 //Show page info
-app.get('/info', (request, response) => {
+app.get('/info', (request, response, next) => {
   let time = new Date().toString();
   console.log(time);
+  //Get all phonebook items and count them
+  let personsCount = 0;
+  Person.find({})
+    .then((persons) => {
+      personsCount = personsCount + persons.length;
+      console.log('Phonebook entries: ' + personsCount);
 
-  response.send(`<div>
-    <p>Phonebook has info for ${persons.length} people</p>
+      //Send info AFTER receiving database response
+      response.send(`<div>
+        <p>Phonebook has info for ${personsCount} people</p>
+        <p> ${time} </p>
+        </div>`);
+    })
+    .catch((error) => next(error));
+
+  /*
+    //Send info AFTER receiving database response
+      response.send(`<div>
+    <p>Phonebook has info for ${personsCount} people</p>
     <p> ${time} </p>
     </div>`);
+    */
 });
+
+//Error handling
+const errorHandler = (error, request, response, next) => {
+  /*
+  Possible errors:
+  CastError
+  ValidationError (Failed custom validations, missing required fields, schema violations)
+  StrictmodeError , not valid currently
+  */
+  console.error(error.name);
+  console.error(error.message);
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' });
+  }
+  //This goes to default express handler
+  next(error);
+};
 
 //AFTER ROUTES
 const unknownEndpoint = (request, response) => {
@@ -127,8 +227,10 @@ const unknownEndpoint = (request, response) => {
 };
 
 app.use(unknownEndpoint);
+// This for last
+app.use(errorHandler);
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

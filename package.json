@@ -20,7 +20,9 @@
   "homepage": "https://github.com/jonijhonkanen/FullstackOpenPart3#readme",
   "dependencies": {
     "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^5.1.0",
+    "mongoose": "^9.7.3",
     "morgan": "^1.10.0"
   }
 }

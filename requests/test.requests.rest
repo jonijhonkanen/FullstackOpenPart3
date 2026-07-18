@@ -57,3 +57,45 @@ Content-Type: application/json
     "content": "do not forget to set correct content type",
     "important": true
 }
+###
+//POST new via Mongoose
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name": "Jari Salonen",
+    "number": "046-1124577"
+}
+
+//DELETE this and test errors with nonexistant id
+//6a5661e212278c8a5ea060bc
+
+###
+//Delete a deleted person
+DELETE http://localhost:3001/api/persons/6a5661e212278c8a5ea060bc
+
+###
+//Get a deleted person
+GET http://localhost:3001/api/persons/6a5661e212278c8a5ea060bc
+
+###
+//PUT for EXISTING person
+PUT http://localhost:3001/api/persons/6a4e8c1fc3c16b4fd6d65469
+Content-Type: application/json
+
+{
+    "name": "Iina Toikka",
+    "number": "046-7788123"
+}
+
+//"6a4e8c1fc3c16b4fd6d65469"
+
+###
+//PUT for NONEXISTING person
+PUT http://localhost:3001/api/persons/6a5661e212278c8a5ea060bc
+Content-Type: application/json
+
+{
+    "name": "Otto Poisto",
+    "number": "046-7788123"
+}
