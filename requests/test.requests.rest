@@ -99,3 +99,49 @@ Content-Type: application/json
     "name": "Otto Poisto",
     "number": "046-7788123"
 }
+
+###
+//TESTING for Mongoose validation
+
+//Too short name
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name": "Po",
+    "number": "050-889779923"
+}
+
+###
+//Bad phone number shorter than 8
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name": "Seppo Jarros",
+    "number": "044-889"
+}
+
+###
+//Bad phone number 1
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name": "Seppo Jarros",
+    "number": "2-88977992"
+}
+
+###
+//Bad phone number 2
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name": "Seppo Jarros",
+    "number": "045-8897"
+}
+
+
+
+
